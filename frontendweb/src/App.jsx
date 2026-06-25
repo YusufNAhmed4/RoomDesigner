@@ -12,12 +12,50 @@ const FURNITURE_OPTIONS = [
     "Couch",
     "Table"
 ];
+const ROOM_WIDTH = 25;
+const ROOM_HEIGHT = 25;
+
+
 
 function App() {
     const [walls, setWalls] = useState([]);
     const [doors, setDoors] = useState([]);
     const [selectedFurniture, setSelectedFurniture] = useState([]);
     const [tool, setTool] = useState("drawWall");
+
+    async function handleGenerateLayout() {
+        const requestBody = {
+            room: {
+                width: ROOM_WIDTH,
+                height: ROOM_HEIGHT,
+                unit: "feet"
+            },
+            walls: walls,
+            doors: doors,
+            furniture: selectedFurniture
+        };
+
+        console.log("Sending to backend:", requestBody);
+
+        try {
+            const response = await fetch("http://localhost:8080/api/generate-layout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error("Backend request failed");
+            }
+
+            const layout = await response.json();
+            console.log("Backend returned:", layout);
+        } catch (error) {
+            console.error("Could not generate layout:", error);
+        }
+    }
 
     function handleFurnitureChange(item) {
         if (selectedFurniture.includes(item)) {
@@ -50,6 +88,10 @@ function App() {
                 setDoors={setDoors}
                 tool={tool}
             />
+
+            <button onClick={handleGenerateLayout}>
+                Generate Layout
+            </button>
         </div>
     );
 }
